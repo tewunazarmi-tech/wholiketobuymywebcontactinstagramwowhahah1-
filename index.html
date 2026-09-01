@@ -10,8 +10,8 @@
 
 <div class="form-wrap">
 
-  <!-- ===== Header card ===== -->
-  <div class="card header-card">
+  <!-- ===== Header card (page 1 only) ===== -->
+  <div class="card header-card" id="headerCard">
     <div class="accent-bar"></div>
     <div class="card-body">
       <h1 id="formTitle">Book Your Mawlyngbna Adventure Activities With Us</h1>
@@ -99,6 +99,20 @@
           <div class="q-note" id="homestayNote"></div>
           <div class="choice-row"><input type="radio" name="homestay" value="yes" id="hs_yes"><label for="hs_yes" id="hs_yes_label"></label></div>
           <div class="choice-row"><input type="radio" name="homestay" value="no" id="hs_no" checked><label for="hs_no" id="hs_no_label"></label></div>
+          <div class="homestay-count-wrap" id="homestayCountWrap" hidden>
+            <label class="q-subnote" id="homestayAdultsLabel"></label>
+            <div class="stepper" data-stepper="hsAdults" id="stepperHsAdults">
+              <button type="button" data-action="dec" aria-label="Decrease">&minus;</button>
+              <input class="stepper-value" type="text" inputmode="numeric" id="f_hs_adults" value="1" readonly>
+              <button type="button" data-action="inc" aria-label="Increase">&plus;</button>
+            </div>
+            <label class="q-subnote" id="homestayChildrenLabel"></label>
+            <div class="stepper" data-stepper="hsChildren" id="stepperHsChildren">
+              <button type="button" data-action="dec" aria-label="Decrease">&minus;</button>
+              <input class="stepper-value" type="text" inputmode="numeric" id="f_hs_children" value="0" readonly>
+              <button type="button" data-action="inc" aria-label="Increase">&plus;</button>
+            </div>
+          </div>
         </div>
       </div>
 

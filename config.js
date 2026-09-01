@@ -206,12 +206,12 @@ const DEFAULT_CONFIG = {
     childrenLabel: "Number of child",
 
     // ----- Package question -----
-    packageQuestionLabel: "Package for Mawlyngbna Adventure",
+    packageQuestionLabel: "Package for Mawlyngbna Adventure (select one or more)",
     // Shown just under the package question, above the list of
     // activities. {price} is replaced automatically with the flat
     // child price set in pricing.childFlatPrice above.
     packageChildNote: "Note: Children below 17 years of age will be charged \u20B9{price} per child on every activity, except Water falls (children pay the same per-person price as adults).",
-    packageError: "Please select a package.",
+    packageError: "Please select at least one package.",
     perPersonText: "per person",
 
     // ----- Home Stay / Camping shared -----
@@ -224,6 +224,13 @@ const DEFAULT_CONFIG = {
     homestayNoOption: "No",
     campingYesOption: "yes",
     campingNoOption: "no",
+
+    // ----- Home Stay: number of people staying (shown once "yes" is picked) -----
+    // These can be a DIFFERENT headcount than "Number of participants" /
+    // "Number of child" above, since not everyone booking an activity
+    // necessarily also stays the night.
+    homestayAdultsLabel: "Number of adults for home stay",
+    homestayChildrenLabel: "Number of children for home stay (below 17)",
 
     // ----- Special request -----
     specialLabel: "Any special request",
@@ -330,30 +337,40 @@ const DEFAULT_CONFIG = {
 
    For every booking, the total is added up like this:
 
-     1. Activity price  ×  Number of adults
-          e.g. ₹1050 × 2 adults = ₹2100
+     1. For EACH activity the visitor ticks:
+          Activity price  ×  Number of adults
+            e.g. ₹1050 × 2 adults = ₹2100
 
-     2. Children on the activity:
-          - if the activity has childPaysFullPrice: true →
-            Activity price × Number of children
-            (e.g. Water falls: ₹100 × 1 child = ₹100)
-          - otherwise →
-            pricing.childFlatPrice × Number of children
-            (e.g. ₹600 × 1 child = ₹600)
+          Children on that activity:
+            - if the activity has childPaysFullPrice: true →
+              Activity price × Number of children
+              (e.g. Water falls: ₹100 × 1 child = ₹100)
+            - otherwise →
+              pricing.childFlatPrice × Number of children
+              (e.g. ₹600 × 1 child = ₹600)
 
-     3. + Home stay, IF the visitor said yes:
-          - firstPersonPrice for the 1st adult, + extraPersonPrice
-            for every adult after that
-          - children are FREE if there's at least 1 adult in the
-            booking
-          - if the booking is children ONLY (0 adults), children
-            are charged firstPersonPrice / extraPersonPrice exactly
-            like adults would be
+          A visitor can tick more than one activity — each ticked
+          activity adds its own line to the total.
 
-     4. + Camping price, IF the visitor said yes
-          (× number of people, only if perPerson is true above)
+     2. + Home stay, IF the visitor said yes. Home stay has its OWN
+          adult/child headcount (set with its own +/− buttons — it
+          doesn't have to match "Number of participants" above,
+          since not everyone booking an activity necessarily also
+          stays the night):
+          - firstPersonPrice for the 1st home-stay adult, +
+            extraPersonPrice for every home-stay adult after that
+          - home-stay children are FREE if there's at least 1
+            home-stay adult
+          - if home stay is booked for children ONLY (0 home-stay
+            adults), those children are charged firstPersonPrice /
+            extraPersonPrice exactly like adults would be
 
-     Total = step 1 + step 2 + step 3 + step 4
+     3. + Camping price, IF the visitor said yes
+          (× number of people, only if perPerson is true above —
+          uses the main "Number of participants" / "Number of
+          child" counts, not the home-stay ones)
+
+     Total = step 1 + step 2 + step 3
 
    This happens automatically — you never calculate anything
    yourself. You only ever change the numbers above (activity

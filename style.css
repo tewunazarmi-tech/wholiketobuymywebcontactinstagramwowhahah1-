@@ -218,6 +218,15 @@ textarea { resize: vertical; min-height: 40px; }
 /* ---------- Per-child age inputs ---------- */
 .child-ages-wrap { margin-top: 14px; }
 .child-ages-wrap .q-note { margin: 0 0 10px; }
+
+.homestay-count-wrap { margin-top: 14px; }
+.q-subnote {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: block;
+  margin: 12px 0 8px;
+}
+.homestay-count-wrap .q-subnote:first-child { margin-top: 0; }
 .child-age-row {
   display: flex;
   align-items: center;

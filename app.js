@@ -48,7 +48,9 @@ const L = CONFIG.labels || {};
 ------------------------------------------------------------------- */
 const stepperLimits = {
   participants: [CONFIG.limits?.minParticipants ?? 1, CONFIG.limits?.maxParticipants ?? 50],
-  children: [CONFIG.limits?.minChildren ?? 0, CONFIG.limits?.maxChildren ?? 50]
+  children: [CONFIG.limits?.minChildren ?? 0, CONFIG.limits?.maxChildren ?? 50],
+  hsAdults: [0, CONFIG.limits?.maxParticipants ?? 50],
+  hsChildren: [CONFIG.limits?.minChildren ?? 0, CONFIG.limits?.maxChildren ?? 50]
 };
 
 function setupSteppers() {
@@ -117,7 +119,7 @@ function renderLabels() {
   setText("childrenLabel", L.childrenLabel);
 
   setText("packageQuestionLabel", L.packageQuestionLabel);
-  const flatChildPrice = CONFIG.pricing?.flatPrice ?? 0;
+  const flatChildPrice = CONFIG.pricing?.childFlatPrice ?? 0;
   setText("packageChildNote", (L.packageChildNote ?? "").replace("{price}", String(flatChildPrice)));
   setText("err_package", L.packageError);
 
@@ -169,7 +171,7 @@ function renderHeader() {
   document.title = CONFIG.formTitle;
 }
 
-/* ---------------- Render packages ---------------- */
+/* ---------------- Render packages (multi-select) ---------------- */
 function renderPackages() {
   const packageListEl = document.getElementById("packageList");
   packageListEl.innerHTML = "";
@@ -177,7 +179,7 @@ function renderPackages() {
     const row = document.createElement("div");
     row.className = "choice-row";
     row.innerHTML = `
-      <input type="radio" name="package" value="${pkg.id}" id="pkg_${pkg.id}">
+      <input type="checkbox" name="package" value="${pkg.id}" id="pkg_${pkg.id}">
       <label for="pkg_${pkg.id}">${pkg.label} <span class="choice-price">= \u20B9${pkg.price} ${L.perPersonText ?? "per person"}</span></label>
     `;
     packageListEl.appendChild(row);
@@ -200,6 +202,8 @@ function renderAddonSections() {
     const prefix = L.notePrefix ?? "note : ";
     document.getElementById("homestayTitle").textContent = hs.title;
     document.getElementById("homestayNote").textContent = `${prefix}${hs.note}`;
+    setText("homestayAdultsLabel", L.homestayAdultsLabel);
+    setText("homestayChildrenLabel", L.homestayChildrenLabel);
   }
 
   if (!CONFIG.camping.enabled) {
@@ -211,9 +215,19 @@ function renderAddonSections() {
       `${prefix}${CONFIG.camping.note} \u20B9 ${CONFIG.camping.price}`;
   }
 
-  document.querySelectorAll('input[name="homestay"], input[name="camping"]').forEach(el => {
+  document.querySelectorAll('input[name="camping"]').forEach(el => {
     el.addEventListener("change", safeRecalcTotal);
   });
+
+  const hsCountWrap = document.getElementById("homestayCountWrap");
+  function syncHomestayCountVisibility() {
+    const on = document.querySelector('input[name="homestay"]:checked')?.value === "yes";
+    if (hsCountWrap) hsCountWrap.hidden = !on;
+  }
+  document.querySelectorAll('input[name="homestay"]').forEach(el => {
+    el.addEventListener("change", () => { syncHomestayCountVisibility(); safeRecalcTotal(); });
+  });
+  syncHomestayCountVisibility();
 }
 
 /* ---------------- Payment detail text (page 2) ---------------- */
@@ -231,15 +245,18 @@ function formatRupees(n) {
 }
 
 /** Recomputes the total from whatever is currently selected on the form.
-    Activities are priced per person. A child (below 17) costs a flat
-    rate (pricing.childFlatPrice) on every activity, EXCEPT activities
-    marked childPaysFullPrice: true, where a child pays the same
-    per-person price as an adult. */
+    Activities are priced per person, and a visitor can tick more than
+    one activity — each ticked activity adds its own line below. A
+    child (below 17) costs a flat rate (pricing.childFlatPrice) on
+    every activity, EXCEPT activities marked childPaysFullPrice: true,
+    where a child pays the same per-person price as an adult.
+    Home stay has its own adult/child headcount, separate from the
+    "Number of participants" / "Number of child" counts above. */
 function computeTotal() {
   const participants = parseInt(document.getElementById("f_participants").value, 10) || 0;
   const children = parseInt(document.getElementById("f_children").value, 10) || 0;
-  const pkgId = document.querySelector('input[name="package"]:checked')?.value;
-  const pkg = CONFIG.packages.find(p => p.id === pkgId);
+  const pkgIds = Array.from(document.querySelectorAll('input[name="package"]:checked')).map(el => el.value);
+  const pkgs = CONFIG.packages.filter(p => pkgIds.includes(p.id));
   const homestayOn = CONFIG.homestay.enabled && document.querySelector('input[name="homestay"]:checked')?.value === "yes";
   const campingOn = CONFIG.camping.enabled && document.querySelector('input[name="camping"]:checked')?.value === "yes";
   const childFlatPrice = CONFIG.pricing?.childFlatPrice ?? 0;
@@ -251,7 +268,7 @@ function computeTotal() {
   const childWordFor = n => n === 1 ? (L.childWord ?? "child") : (L.childrenWord ?? "children");
   const freeText = L.freeText ?? "free";
 
-  if (pkg) {
+  pkgs.forEach(pkg => {
     if (participants > 0) {
       const sub = pkg.price * participants;
       lines.push({ label: `${pkg.label} \u00d7 ${participants} ${adultWord}`, amount: sub });
@@ -264,33 +281,36 @@ function computeTotal() {
         total += sub;
       } else if (childFlatPrice > 0) {
         const sub = childFlatPrice * children;
-        lines.push({ label: `${children} ${childWordFor(children)} \u00d7 \u20B9${childFlatPrice}`, amount: sub });
+        lines.push({ label: `${pkg.label} \u2014 ${children} ${childWordFor(children)} \u00d7 \u20B9${childFlatPrice}`, amount: sub });
         total += sub;
       } else {
-        lines.push({ label: `${children} ${childWordFor(children)} (${freeText})`, amount: 0 });
+        lines.push({ label: `${pkg.label} \u2014 ${children} ${childWordFor(children)} (${freeText})`, amount: 0 });
       }
     }
-  }
+  });
 
   if (homestayOn) {
     const hs = CONFIG.homestay;
     const firstPrice = hs.firstPersonPrice ?? 0;
     const extraPrice = hs.extraPersonPrice ?? 0;
+    const hsAdults = parseInt(document.getElementById("f_hs_adults")?.value, 10) || 0;
+    const hsChildren = parseInt(document.getElementById("f_hs_children")?.value, 10) || 0;
+    const hsAdultWord = hsAdults === 1 ? (L.adultWord ?? "adult") : (L.adultsWord ?? "adults");
 
-    if (participants > 0) {
-      const adultSub = firstPrice + Math.max(0, participants - 1) * extraPrice;
-      lines.push({ label: `${hs.title} \u2014 ${participants} ${adultWord}`, amount: adultSub });
+    if (hsAdults > 0) {
+      const adultSub = firstPrice + Math.max(0, hsAdults - 1) * extraPrice;
+      lines.push({ label: `${hs.title} \u2014 ${hsAdults} ${hsAdultWord}`, amount: adultSub });
       total += adultSub;
 
-      if (children > 0) {
+      if (hsChildren > 0) {
         const freeText2 = L.homeStayFreeWithAdultText ?? "(free, travelling with an adult)";
-        lines.push({ label: `${hs.title} \u2014 ${children} ${childWordFor(children)} ${freeText2}`, amount: 0 });
+        lines.push({ label: `${hs.title} \u2014 ${hsChildren} ${childWordFor(hsChildren)} ${freeText2}`, amount: 0 });
       }
-    } else if (children > 0) {
-      // No adults in the booking — children are charged the same as adults would be.
-      const childSub = firstPrice + Math.max(0, children - 1) * extraPrice;
+    } else if (hsChildren > 0) {
+      // No adults in the home stay booking — children are charged the same as adults would be.
+      const childSub = firstPrice + Math.max(0, hsChildren - 1) * extraPrice;
       const chargedText = L.homeStayChargedAsAdultText ?? "(no adult in booking, charged as adult)";
-      lines.push({ label: `${hs.title} \u2014 ${children} ${childWordFor(children)} ${chargedText}`, amount: childSub });
+      lines.push({ label: `${hs.title} \u2014 ${hsChildren} ${childWordFor(hsChildren)} ${chargedText}`, amount: childSub });
       total += childSub;
     }
   }
@@ -302,7 +322,7 @@ function computeTotal() {
     total += sub;
   }
 
-  return { lines, total, pkg };
+  return { lines, total, pkgs };
 }
 
 function recalcTotal() {
@@ -426,7 +446,7 @@ function validatePage1() {
   toggleError("err_date", "f_date", !date);
   if (!date) ok = false;
 
-  const pkgChosen = document.querySelector('input[name="package"]:checked');
+  const pkgChosen = document.querySelectorAll('input[name="package"]:checked').length > 0;
   document.getElementById("err_package").classList.toggle("show", !pkgChosen);
   if (!pkgChosen) ok = false;
 
@@ -448,6 +468,8 @@ const pageIndicator = document.getElementById("pageIndicator");
 function showPage(pageId) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(pageId).classList.add("active");
+  const headerCard = document.getElementById("headerCard");
+  if (headerCard) headerCard.style.display = pageId === "page-2" ? "none" : "";
   if (pageIndicator) {
     pageIndicator.textContent = pageId === "page-2" ? (L.page2Indicator ?? "Page 2 of 2") : (L.page1Indicator ?? "Page 1 of 2");
   }
@@ -488,35 +510,197 @@ function setupNavigation() {
     const name = document.getElementById("f_name").value.trim();
     const whatsapp = document.getElementById("f_whatsapp").value.trim();
     const date = document.getElementById("f_date").value;
-    const participants = document.getElementById("f_participants").value;
-    const children = document.getElementById("f_children").value;
-    const pkg = CONFIG.packages.find(p => p.id === document.querySelector('input[name="package"]:checked').value);
+    const participants = parseInt(document.getElementById("f_participants").value, 10) || 0;
+    const children = parseInt(document.getElementById("f_children").value, 10) || 0;
+    const pkgIds = Array.from(document.querySelectorAll('input[name="package"]:checked')).map(el => el.value);
+    const pkgs = CONFIG.packages.filter(p => pkgIds.includes(p.id));
     const homestay = CONFIG.homestay.enabled ? (document.querySelector('input[name="homestay"]:checked')?.value || "no") : null;
+    const hsAdults = homestay === "yes" ? (parseInt(document.getElementById("f_hs_adults")?.value, 10) || 0) : 0;
+    const hsChildren = homestay === "yes" ? (parseInt(document.getElementById("f_hs_children")?.value, 10) || 0) : 0;
     const camping = CONFIG.camping.enabled ? (document.querySelector('input[name="camping"]:checked')?.value || "no") : null;
     const special = document.getElementById("f_special").value.trim();
     const payMode = document.querySelector('input[name="paymentMode"]:checked').value;
     const payLabel = PAY_LABELS[payMode];
+    const childFlatPrice = CONFIG.pricing?.childFlatPrice ?? 0;
 
-    const { lines: priceLines, total } = computeTotal();
+    const rupee = n => `₹${Math.round(n).toLocaleString("en-IN")}`;
+    const plural = (n, one, many) => (n === 1 ? one : many);
+    const fmtDate = iso => {
+      if (!iso) return "";
+      const d = new Date(iso + "T00:00:00");
+      if (isNaN(d)) return iso;
+      return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    };
+    const sep = "━━━━━━━━━━━━━━━━━━━━";
 
-    const lines = [
-      "*New Booking — Mawlyngbna Adventure*",
-      "",
-      `Name: ${name}`,
-      `WhatsApp Number: ${whatsapp}`,
-      `Date of visit: ${date}`,
-      `Number of participants: ${participants}`,
-      `Number of child: ${children}`
-    ];
-    lines.push(`Package: ${pkg.label} (\u20B9${pkg.price} per person)`);
-    if (homestay !== null) lines.push(`Home stay: ${homestay}`);
-    if (camping !== null) lines.push(`Camping: ${camping}`);
-    if (special) lines.push(`Special request: ${special}`);
-    lines.push(`Payment mode: ${payLabel}`);
+    const lines = [];
+    lines.push("🌿 MAWLYNGBNA ADVENTURE 🌿");
+    lines.push(sep);
+    lines.push("🎫 NEW BOOKING CONFIRMATION");
     lines.push("");
-    lines.push("*Price breakdown*");
-    priceLines.forEach(l => lines.push(`${l.label}: \u20B9${Math.round(l.amount).toLocaleString("en-IN")}`));
-    lines.push(`*Total: \u20B9${Math.round(total).toLocaleString("en-IN")}*`);
+    lines.push("👤 CUSTOMER DETAILS");
+    lines.push(`• Name: ${name}`);
+    lines.push(`• 📱 WhatsApp: ${whatsapp}`);
+    lines.push(`• 📅 Visit Date: ${fmtDate(date)}`);
+    lines.push("");
+    lines.push("👥 PARTICIPANTS");
+    lines.push(`• 🧑 Adults: ${participants}`);
+    lines.push(`• 🧒 Children: ${children}`);
+    lines.push(`• 👨‍👩‍👧 Total Guests: ${participants + children}`);
+    lines.push("");
+    lines.push(sep);
+
+    // ---------- Adventure package(s) ----------
+    let packageTotal = 0;
+    if (pkgs.length > 0) {
+      lines.push("🎯 ADVENTURE PACKAGE");
+      lines.push("");
+      pkgs.forEach((pkg, idx) => {
+        lines.push(pkgs.length > 1 ? `Package ${idx + 1} — ${pkg.label}` : pkg.label);
+        lines.push("");
+        let pkgSub = 0;
+        if (participants > 0) {
+          const sub = pkg.price * participants;
+          pkgSub += sub;
+          lines.push(`🧑 ${plural(participants, "Adult", "Adults")}`);
+          lines.push(`${participants} × ${rupee(pkg.price)} = ${rupee(sub)}`);
+          lines.push("");
+        }
+        if (children > 0) {
+          if (pkg.childPaysFullPrice) {
+            const sub = pkg.price * children;
+            pkgSub += sub;
+            lines.push(`🧒 ${plural(children, "Child", "Children")}`);
+            lines.push(`${children} × ${rupee(pkg.price)} = ${rupee(sub)}`);
+            lines.push("");
+          } else if (childFlatPrice > 0) {
+            const sub = childFlatPrice * children;
+            pkgSub += sub;
+            lines.push(`🧒 ${plural(children, "Child", "Children")}`);
+            lines.push(`${children} × ${rupee(childFlatPrice)} = ${rupee(sub)}`);
+            lines.push("");
+          } else {
+            lines.push(`🧒 ${plural(children, "Child", "Children")}`);
+            lines.push(`${children} × ₹0 = FREE`);
+            lines.push("");
+          }
+        }
+        lines.push(`➡️ Package Total: ${rupee(pkgSub)}`);
+        lines.push("");
+        packageTotal += pkgSub;
+      });
+      lines.push(sep);
+    }
+
+    // ---------- Homestay ----------
+    let homestayTotal = 0;
+    const homestayOn = homestay === "yes";
+    if (homestay !== null) {
+      lines.push("🏠 HOMESTAY");
+      lines.push("");
+      if (homestayOn) {
+        const hs = CONFIG.homestay;
+        const firstPrice = hs.firstPersonPrice ?? 0;
+        const extraPrice = hs.extraPersonPrice ?? 0;
+
+        lines.push(`👥 Homestay Guests: ${hsAdults + hsChildren}`);
+        lines.push(`• 🧑 Adults: ${hsAdults}`);
+        lines.push(`• 🧒 Children: ${hsChildren}`);
+        lines.push("");
+        lines.push("🍳 Includes: Breakfast");
+        lines.push("Maggi & Roti");
+        lines.push("");
+
+        if (hsAdults > 0) {
+          const adultSub = firstPrice + Math.max(0, hsAdults - 1) * extraPrice;
+          homestayTotal += adultSub;
+          lines.push(`🧑 ${plural(hsAdults, "Adult", "Adults")} Homestay`);
+          lines.push(`${hsAdults} × ${rupee(firstPrice)} = ${rupee(adultSub)}`);
+          lines.push("");
+          if (hsChildren > 0) {
+            lines.push(`🧒 ${plural(hsChildren, "Child", "Children")}`);
+            lines.push(`${hsChildren} × ₹0 = FREE`);
+            lines.push("(Child travelling with an adult)");
+            lines.push("");
+          }
+        } else if (hsChildren > 0) {
+          const childSub = firstPrice + Math.max(0, hsChildren - 1) * extraPrice;
+          homestayTotal += childSub;
+          lines.push(`🧒 ${plural(hsChildren, "Child", "Children")} Homestay`);
+          lines.push(`${hsChildren} × ${rupee(firstPrice)} = ${rupee(childSub)}`);
+          lines.push("(No adult in booking, charged as adult)");
+          lines.push("");
+        }
+        lines.push(`➡️ Homestay Total: ${rupee(homestayTotal)}`);
+      } else {
+        lines.push("Homestay Required: NO");
+      }
+      lines.push("");
+      lines.push(sep);
+    }
+
+    // ---------- Camping ----------
+    let campingTotal = 0;
+    const campingOn = camping === "yes";
+    if (camping !== null) {
+      lines.push("⛺ CAMPING");
+      lines.push("");
+      lines.push(`🏕️ Camping Required: ${campingOn ? "YES" : "NO"}`);
+      if (campingOn) {
+        const headcount = participants + children;
+        lines.push(`👥 Camping Guests: ${headcount}`);
+        lines.push("");
+        if (CONFIG.camping.perPerson) {
+          campingTotal = CONFIG.camping.price * headcount;
+          lines.push(`${headcount} × ${rupee(CONFIG.camping.price)} = ${rupee(campingTotal)}`);
+        } else {
+          campingTotal = CONFIG.camping.price;
+          lines.push(`${rupee(campingTotal)}`);
+        }
+        lines.push("");
+        lines.push(`➡️ Camping Total: ${rupee(campingTotal)}`);
+      }
+      lines.push("");
+      lines.push(sep);
+    }
+
+    if (special) {
+      lines.push(`📝 Special Request: ${special}`);
+      lines.push("");
+      lines.push(sep);
+    }
+
+    const grandTotal = packageTotal + homestayTotal + campingTotal;
+
+    // ---------- Final price ----------
+    lines.push("💰 FINAL PRICE");
+    lines.push("");
+    if (pkgs.length > 0) lines.push(`🎯 Adventure Package      ${rupee(packageTotal)}`);
+    if (homestayOn) lines.push(`🏠 Homestay + Breakfast   ${rupee(homestayTotal)}`);
+    if (campingOn) lines.push(`⛺ Camping                ${rupee(campingTotal)}`);
+    lines.push(sep);
+    lines.push(`💵 TOTAL AMOUNT: ${rupee(grandTotal)}`);
+    lines.push("");
+
+    // ---------- Payment ----------
+    lines.push("💳 PAYMENT");
+    lines.push(`• Payment Mode: ${payLabel}`);
+    lines.push("• Payment Status: ⏳ Pending Confirmation");
+    lines.push("");
+    lines.push(sep);
+
+    // ---------- Booking summary ----------
+    lines.push("📋 BOOKING SUMMARY");
+    lines.push("");
+    lines.push(`📅 ${fmtDate(date)}`);
+    lines.push(`👥 ${participants + children} Guests — ${participants} ${plural(participants, "Adult", "Adults")} + ${children} ${plural(children, "Child", "Children")}`);
+    lines.push(`🎯 ${pkgs.length} Adventure ${plural(pkgs.length, "Package", "Packages")}`);
+    if (homestayOn) lines.push(`🏠 Homestay: ${hsAdults + hsChildren} Guests`);
+    if (campingOn) lines.push(`⛺ Camping: ${participants + children} Guests`);
+    if (homestayOn) lines.push("🍳 Breakfast Included");
+    lines.push(`💰 Total: ${rupee(grandTotal)}`);
+    lines.push("");
+    lines.push("🌿 Thank you for choosing Mawlyngbna Adventure! 🌿");
 
     const message = lines.join("\n");
     const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
@@ -544,6 +728,8 @@ function setupClearForm() {
     document.getElementById("detailUpi").hidden = true;
     document.getElementById("detailBank").hidden = true;
     document.getElementById("detailQr").hidden = true;
+    const hsCountWrap = document.getElementById("homestayCountWrap");
+    if (hsCountWrap) hsCountWrap.hidden = true;
     safeRecalcTotal();
     showPage("page-1");
   });
