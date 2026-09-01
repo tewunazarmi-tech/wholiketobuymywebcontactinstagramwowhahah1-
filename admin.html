@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Mawlyngbna Adventure</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+
+<!-- ===== Password gate ===== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h2>🔒 Admin Access</h2>
+    <p>Enter the admin password to manage prices, packages and payment details.</p>
+    <input type="password" id="loginPassword" placeholder="Password">
+    <label class="toggle-row" style="justify-content:center; margin:-8px 0 4px;">
+      <input type="checkbox" id="showPasswordToggle"> Show password
+    </label>
+    <button id="loginBtn" class="btn-confirm" style="width:100%; justify-content:center;">Unlock</button>
+    <div class="field-error show" id="loginError" style="display:none;">Incorrect password.</div>
+    <a href="index.html" class="back-link">← Back to booking form</a>
+    <div style="margin-top:10px;">
+      <button type="button" id="forgotPasswordBtn" class="clear-link" style="font-size:13px;">Forgot password? Reset it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Dashboard (hidden until unlocked) ===== -->
+<div id="dashboard" class="dashboard" hidden>
+
+  <div class="admin-topbar">
+    <div>
+      <strong>Mawlyngbna Adventure</strong> — Admin Dashboard
+    </div>
+    <div>
+      <a href="index.html" class="back-link">View live form</a>
+      <button id="logoutBtn" class="clear-link">Log out</button>
+    </div>
+  </div>
+
+  <div class="admin-wrap">
+
+    <!-- General -->
+    <section class="admin-section">
+      <h3>Header text</h3>
+      <label>Form title</label>
+      <input type="text" id="a_title">
+      <label>Form subtitle</label>
+      <input type="text" id="a_subtitle">
+      <label>WhatsApp number (with country code, digits only)</label>
+      <input type="text" id="a_whatsapp" placeholder="916909659928">
+    </section>
+
+    <!-- Packages -->
+    <section class="admin-section">
+      <div class="admin-section-head">
+        <h3>Packages</h3>
+        <button type="button" class="add-btn" id="addPackageBtn">+ Add package</button>
+      </div>
+      <div id="packageEditor"></div>
+      <label>Flat child price (₹) — charged per child on every activity, unless that activity's "child pays full price" box is checked</label>
+      <input type="number" id="a_childFlat" min="0" step="10">
+    </section>
+
+    <!-- Booking limits -->
+    <section class="admin-section">
+      <h3>Participant / child limits</h3>
+      <div class="limit-grid">
+        <div>
+          <label>Min participants</label>
+          <input type="number" id="a_minP" min="0">
+        </div>
+        <div>
+          <label>Max participants</label>
+          <input type="number" id="a_maxP" min="0">
+        </div>
+        <div>
+          <label>Min children</label>
+          <input type="number" id="a_minC" min="0">
+        </div>
+        <div>
+          <label>Max children</label>
+          <input type="number" id="a_maxC" min="0">
+        </div>
+      </div>
+    </section>
+
+    <!-- Home stay -->
+    <section class="admin-section">
+      <div class="admin-section-head">
+        <h3>Home stay add-on</h3>
+        <label class="toggle-row"><input type="checkbox" id="a_hs_enabled"> Show this section on the form</label>
+      </div>
+      <label>Title</label>
+      <input type="text" id="a_hs_title">
+      <label>Note</label>
+      <input type="text" id="a_hs_note">
+      <label>Price for the 1st person (₹)</label>
+      <input type="number" id="a_hs_firstprice">
+      <label>Price for each additional person, same booking (₹)</label>
+      <input type="number" id="a_hs_extraprice">
+      <p class="admin-hint">Children below 17 are free if at least 1 adult is in the booking. If the booking is children only, they're charged the same as adults (using the two prices above).</p>
+    </section>
+
+    <!-- Camping -->
+    <section class="admin-section">
+      <div class="admin-section-head">
+        <h3>Camping add-on</h3>
+        <label class="toggle-row"><input type="checkbox" id="a_cp_enabled"> Show this section on the form</label>
+      </div>
+      <label>Title</label>
+      <input type="text" id="a_cp_title">
+      <label>Price (₹)</label>
+      <input type="number" id="a_cp_price">
+      <label>Note</label>
+      <input type="text" id="a_cp_note">
+      <label class="toggle-row" style="margin-top:12px;"><input type="checkbox" id="a_cp_perperson"> Charge per person (off = one flat price for the whole booking)</label>
+    </section>
+
+    <!-- Text on the form -->
+    <section class="admin-section">
+      <h3>Text on the form</h3>
+      <p class="section-hint">Every label, placeholder, note, error message and button on the booking page. Change anything here and it updates the live site — nothing is hard-coded.</p>
+
+      <h4>Top of page 1</h4>
+      <label>Intro line under the title</label>
+      <input type="text" id="t_topNote">
+      <label>"* Indicates required question" line</label>
+      <input type="text" id="t_requiredNote">
+      <label>Page indicator text on page 1 (top-right)</label>
+      <input type="text" id="t_page1Indicator">
+      <label>Page indicator text on page 2 (top-right)</label>
+      <input type="text" id="t_page2Indicator">
+
+      <h4>Name</h4>
+      <label>Question label</label>
+      <input type="text" id="t_nameLabel">
+      <label>Placeholder text inside the box</label>
+      <input type="text" id="t_namePlaceholder">
+      <label>Error message (shown if left blank)</label>
+      <input type="text" id="t_nameError">
+
+      <h4>WhatsApp Number</h4>
+      <label>Question label</label>
+      <input type="text" id="t_whatsappLabel">
+      <label>Placeholder text inside the box</label>
+      <input type="text" id="t_whatsappPlaceholder">
+      <label>Error message</label>
+      <input type="text" id="t_whatsappError">
+
+      <h4>Date of visit</h4>
+      <label>Question label</label>
+      <input type="text" id="t_dateLabel">
+      <label>Error message</label>
+      <input type="text" id="t_dateError">
+
+      <h4>Participants &amp; children</h4>
+      <label>"Number of participants" label</label>
+      <input type="text" id="t_participantsLabel">
+      <label>"Number of child" label</label>
+      <input type="text" id="t_childrenLabel">
+
+      <h4>Package question</h4>
+      <label>Question label</label>
+      <input type="text" id="t_packageQuestionLabel">
+      <label>Child pricing note (shown above the package list). Use {price} for the flat child price.</label>
+      <input type="text" id="t_packageChildNote">
+      <label>Error message</label>
+      <input type="text" id="t_packageError">
+      <label>"per person" text shown after each price</label>
+      <input type="text" id="t_perPersonText">
+
+      <h4>Home Stay &amp; Camping</h4>
+      <label>"note : " prefix shown before each add-on's note</label>
+      <input type="text" id="t_notePrefix">
+      <label>Home Stay — "yes" option text</label>
+      <input type="text" id="t_homestayYesOption">
+      <label>Home Stay — "no" option text</label>
+      <input type="text" id="t_homestayNoOption">
+      <label>Camping — "yes" option text</label>
+      <input type="text" id="t_campingYesOption">
+      <label>Camping — "no" option text</label>
+      <input type="text" id="t_campingNoOption">
+
+      <h4>Special request</h4>
+      <label>Question label</label>
+      <input type="text" id="t_specialLabel">
+      <label>Placeholder text</label>
+      <input type="text" id="t_specialPlaceholder">
+
+      <h4>Payment mode question (page 1)</h4>
+      <label>Question label</label>
+      <input type="text" id="t_paymentModeLabel">
+      <label>Error message</label>
+      <input type="text" id="t_paymentModeError">
+      <label>"UPI ID" option text</label>
+      <input type="text" id="t_payUpiOption">
+      <label>"Bank Transfer" option text</label>
+      <input type="text" id="t_payBankOption">
+      <label>"QR Code" option text</label>
+      <input type="text" id="t_payQrOption">
+
+      <h4>Page 1 buttons</h4>
+      <label>"Clear form" button</label>
+      <input type="text" id="t_clearFormBtn">
+      <label>"Next" button</label>
+      <input type="text" id="t_nextBtn">
+
+      <h4>Page 2 — Payment heading</h4>
+      <label>Page 2 title (shows the chosen method after it, e.g. "Payment — UPI ID")</label>
+      <input type="text" id="t_page2Title">
+
+      <h4>Page 2 — UPI detail block</h4>
+      <label>Heading</label>
+      <input type="text" id="t_payUpiHeading">
+      <label>"UPI ID :" row label</label>
+      <input type="text" id="t_upiIdRowLabel">
+
+      <h4>Page 2 — Bank detail block</h4>
+      <label>Heading</label>
+      <input type="text" id="t_payBankHeading">
+      <label>"Account :" row label</label>
+      <input type="text" id="t_accountRowLabel">
+      <label>"IFSC :" row label</label>
+      <input type="text" id="t_ifscRowLabel">
+
+      <h4>Page 2 — QR detail block</h4>
+      <label>Heading</label>
+      <input type="text" id="t_payQrHeading">
+      <label>"scan and pay" line</label>
+      <input type="text" id="t_scanAndPayText">
+      <label>"Download QR" button</label>
+      <input type="text" id="t_downloadQrBtn">
+      <label>"Copy UPI ID" button (under the QR)</label>
+      <input type="text" id="t_copyUpiBtn">
+
+      <h4>Copy buttons</h4>
+      <label>Default "Copy" button text (UPI ID / Account / IFSC rows)</label>
+      <input type="text" id="t_copyBtnText">
+      <label>Text shown briefly after copying</label>
+      <input type="text" id="t_copiedBtnText">
+
+      <h4>Live total box</h4>
+      <label>"Estimated total" heading</label>
+      <input type="text" id="t_estimatedTotalLabel">
+      <label>"Total" row label</label>
+      <input type="text" id="t_totalLabel">
+      <label>Footer note under the total</label>
+      <input type="text" id="t_totalFooterNote">
+      <label>Note shown before a package is picked</label>
+      <input type="text" id="t_emptyBreakdownNote">
+
+      <h4>Page 2 buttons</h4>
+      <label>"Back" button</label>
+      <input type="text" id="t_backBtn">
+      <label>"Submit" button</label>
+      <input type="text" id="t_submitBtn">
+
+      <h4>Pop-up messages</h4>
+      <label>Message when required fields are missing</label>
+      <input type="text" id="t_fillRequiredToast">
+      <label>Prefix shown before whatever was copied</label>
+      <input type="text" id="t_copiedToastPrefix">
+
+      <h4>Price breakdown wording</h4>
+      <label>Word for 1 adult</label>
+      <input type="text" id="t_adultWord">
+      <label>Word for 2+ adults</label>
+      <input type="text" id="t_adultsWord">
+      <label>Word for 1 child</label>
+      <input type="text" id="t_childWord">
+      <label>Word for 2+ children</label>
+      <input type="text" id="t_childrenWord">
+      <label>Word used for "free"</label>
+      <input type="text" id="t_freeText">
+      <label>Home Stay chargeable-age range text — use {from} for the first paying age</label>
+      <input type="text" id="t_homeStayAgedRangeText">
+      <label>Home Stay free-age text — use {age} for the free-up-to age</label>
+      <input type="text" id="t_homeStayFreeAgeText">
+    </section>
+
+    <!-- Payment -->
+    <section class="admin-section">
+      <h3>Payment details</h3>
+      <label>Account holder name</label>
+      <input type="text" id="a_pay_name">
+      <label>UPI ID</label>
+      <input type="text" id="a_pay_upi">
+      <label>Bank name</label>
+      <input type="text" id="a_pay_bankname">
+      <label>Bank account number</label>
+      <input type="text" id="a_pay_bankacc">
+      <label>IFSC code</label>
+      <input type="text" id="a_pay_ifsc">
+      <label>QR code image URL (or path, e.g. assets/qr.png)</label>
+      <input type="text" id="a_pay_qr">
+    </section>
+
+    <!-- Security -->
+    <section class="admin-section">
+      <h3>Admin password</h3>
+      <label>Change password (for this browser's dashboard access)</label>
+      <input type="text" id="a_password">
+    </section>
+
+    <div class="admin-actions">
+      <button id="saveBtn" class="btn-confirm">Save changes</button>
+      <button id="resetBtn" class="clear-link">Reset everything to defaults</button>
+      <span id="saveStatus" class="save-status"></span>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

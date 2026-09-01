@@ -1,0 +1,393 @@
+/* ============================================================
+   MAWLYNGBNA ADVENTURE — STYLES
+   Visually matches the Google Form screenshots:
+   lavender page background, white rounded cards, violet
+   accent bar + accent color, circular radio/checkbox controls.
+   ============================================================ */
+
+:root {
+  --page-bg: #f0ebfa;
+  --card-bg: #ffffff;
+  --accent: #673ab7;
+  --accent-dark: #5c33a8;
+  --text-primary: #202124;
+  --text-secondary: #444746;
+  --text-muted: #70757a;
+  --border: #dadce0;
+  --required: #d93025;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.10);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  font-family: "Google Sans", Roboto, Arial, "Segoe UI", sans-serif;
+  color: var(--text-primary);
+  padding-bottom: 40px;
+}
+
+.form-wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px 60px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.card-body { padding: 24px 24px 24px; }
+
+/* ---------- Header card ---------- */
+.header-card .accent-bar {
+  height: 10px;
+  background: var(--accent);
+}
+.header-card h1 {
+  font-size: 28px;
+  line-height: 1.3;
+  font-weight: 400;
+  margin: 0 0 16px;
+}
+.header-card p.subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.account-row {
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+  font-size: 14px;
+}
+.account-row .email { font-weight: 500; }
+.account-row a { color: var(--accent); text-decoration: none; margin-left: 6px; }
+.required-note {
+  border-top: 1px solid var(--border);
+  padding: 12px 24px;
+  font-size: 13px;
+  color: var(--required);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.page-indicator {
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---------- Multi-page flow ---------- */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ---------- Question labels ---------- */
+.q-label {
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 12px;
+  display: block;
+}
+.q-label .req { color: var(--required); margin-left: 2px; }
+.q-note {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: -6px 0 14px;
+  white-space: pre-line;
+}
+
+/* ---------- Text inputs ---------- */
+input[type="text"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+textarea {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 2px 8px;
+  font-size: 15px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--text-primary);
+}
+input:focus, textarea:focus {
+  outline: none;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 7px;
+}
+input.invalid { border-bottom: 2px solid var(--required); }
+.field-error {
+  color: var(--required);
+  font-size: 12px;
+  margin-top: 6px;
+  display: none;
+}
+.field-error.show { display: block; }
+textarea { resize: vertical; min-height: 40px; }
+
+/* ---------- Radio / choice rows ---------- */
+.choice-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 9px 0;
+  cursor: pointer;
+}
+.choice-row input[type="radio"],
+.choice-row input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border: 2px solid var(--text-muted);
+  border-radius: 50%;
+  margin-top: 1px;
+  cursor: pointer;
+  position: relative;
+  transition: border-color .15s;
+}
+.choice-row input[type="checkbox"] { border-radius: 4px; }
+.choice-row input[type="radio"]:checked,
+.choice-row input[type="checkbox"]:checked {
+  border-color: var(--accent);
+}
+.choice-row input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.choice-row input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px; top: 1px;
+  width: 6px; height: 11px;
+  border: solid var(--accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.choice-row label {
+  font-size: 15px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.choice-price { color: var(--text-muted); }
+
+/* ---------- Stepper (+ / -) ---------- */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.stepper button {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #f4f1fb;
+  color: var(--accent);
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+.stepper button:hover { background: #e6def8; }
+.stepper button:disabled { color: var(--border); cursor: not-allowed; background: #f4f1fb; }
+.stepper .stepper-value {
+  width: 52px;
+  text-align: center;
+  font-size: 16px;
+  border: none;
+  padding: 0;
+}
+.stepper .stepper-value:focus { outline: none; }
+
+/* ---------- Per-child age inputs ---------- */
+.child-ages-wrap { margin-top: 14px; }
+.child-ages-wrap .q-note { margin: 0 0 10px; }
+.child-age-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.child-age-row label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  min-width: 82px;
+}
+.child-age-row input[type="number"] {
+  width: 80px;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.child-age-row input[type="number"]:focus {
+  border: 1px solid var(--accent);
+  padding: 6px 8px;
+}
+
+/* ---------- Payment detail box ---------- */
+.pay-detail {
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
+}
+.pay-detail-head {
+  background: var(--accent);
+  color: #fff;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 500;
+}
+.pay-detail-body { padding: 18px 20px; font-size: 15px; }
+.pay-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  flex-wrap: wrap;
+}
+.pay-row .val { font-family: "Roboto Mono", monospace; font-style: italic; word-break: break-all; }
+.copy-btn, .dl-btn {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: #fff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.copy-btn:hover, .dl-btn:hover { background: #f4f1fb; }
+.copy-btn.copied { background: var(--accent); color: #fff; }
+.qr-box { text-align: center; margin-top: 8px; }
+.qr-box img {
+  max-width: 220px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* ---------- Live total card ---------- */
+.total-card { border: 1px solid var(--accent); }
+.total-breakdown {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.total-breakdown .b-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+}
+.total-breakdown .b-row .amt { color: var(--text-primary); }
+.total-breakdown .b-empty { color: var(--text-muted); font-style: italic; }
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+  padding-top: 10px;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+/* ---------- Footer buttons ---------- */
+.footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+}
+.btn-confirm {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 26px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-confirm:hover { background: var(--accent-dark); }
+.btn-confirm:disabled { background: #c9c2df; cursor: not-allowed; }
+.clear-link {
+  color: var(--accent);
+  font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.btn-back {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  padding: 13px 10px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.btn-back:hover { background: #f4f1fb; }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #323232;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+  z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- Admin trigger (hidden in plain sight) ---------- */
+.admin-trigger {
+  position: fixed;
+  bottom: 6px;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+  opacity: 0;
+  cursor: default;
+  z-index: 10;
+}
+
+@media (max-width: 480px) {
+  .card-body { padding: 20px 18px; }
+  .header-card h1 { font-size: 22px; }
+}

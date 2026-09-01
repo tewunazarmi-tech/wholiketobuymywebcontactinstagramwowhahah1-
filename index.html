@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Your Mawlyngbna Adventure Activities With Us</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="form-wrap">
+
+  <!-- ===== Header card ===== -->
+  <div class="card header-card">
+    <div class="accent-bar"></div>
+    <div class="card-body">
+      <h1 id="formTitle">Book Your Mawlyngbna Adventure Activities With Us</h1>
+      <p class="subtitle" id="formSubtitle">Fill in your details below to reserve your adventure experience</p>
+    </div>
+    <div class="account-row" id="topNote"></div>
+    <div class="required-note">
+      <span id="requiredNote"></span>
+      <span class="page-indicator" id="pageIndicator"></span>
+    </div>
+  </div>
+
+  <form id="bookingForm">
+
+    <!-- ================================================================
+         PAGE 1 — visitor details, package, add-ons, payment mode choice
+         ================================================================ -->
+    <section class="page active" id="page-1" data-page="1">
+
+      <!-- ===== Name ===== -->
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" for="f_name" id="nameLabel"></label>
+          <input type="text" id="f_name" name="name" required>
+          <div class="field-error" id="err_name"></div>
+        </div>
+      </div>
+
+      <!-- ===== WhatsApp Number ===== -->
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" for="f_whatsapp" id="whatsappLabel"></label>
+          <input type="tel" id="f_whatsapp" name="whatsapp" required inputmode="numeric">
+          <div class="field-error" id="err_whatsapp"></div>
+        </div>
+      </div>
+
+      <!-- ===== Date of visit ===== -->
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" for="f_date" id="dateLabel"></label>
+          <input type="date" id="f_date" name="date" required>
+          <div class="field-error" id="err_date"></div>
+        </div>
+      </div>
+
+      <!-- ===== Number of participants ===== -->
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" id="participantsLabel"></label>
+          <div class="stepper" data-stepper="participants" id="stepperParticipants">
+            <button type="button" data-action="dec" aria-label="Decrease">&minus;</button>
+            <input class="stepper-value" type="text" inputmode="numeric" id="f_participants" name="participants" value="1" readonly>
+            <button type="button" data-action="inc" aria-label="Increase">&plus;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Number of child ===== -->
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" id="childrenLabel"></label>
+          <div class="stepper" data-stepper="children" id="stepperChildren">
+            <button type="button" data-action="dec" aria-label="Decrease">&minus;</button>
+            <input class="stepper-value" type="text" inputmode="numeric" id="f_children" name="children" value="0" readonly>
+            <button type="button" data-action="inc" aria-label="Increase">&plus;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Package (rendered by JS from config) ===== -->
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" id="packageQuestionLabel"></label>
+          <div class="q-note" id="packageChildNote"></div>
+          <div id="packageList"></div>
+          <div class="field-error" id="err_package"></div>
+        </div>
+      </div>
+
+      <!-- ===== Home stay (rendered by JS, hideable) ===== -->
+      <div class="card" id="homestayCard">
+        <div class="card-body">
+          <label class="q-label" id="homestayTitle">Home Stay</label>
+          <div class="q-note" id="homestayNote"></div>
+          <div class="choice-row"><input type="radio" name="homestay" value="yes" id="hs_yes"><label for="hs_yes" id="hs_yes_label"></label></div>
+          <div class="choice-row"><input type="radio" name="homestay" value="no" id="hs_no" checked><label for="hs_no" id="hs_no_label"></label></div>
+        </div>
+      </div>
+
+      <!-- ===== Camping (rendered by JS, hideable) ===== -->
+      <div class="card" id="campingCard">
+        <div class="card-body">
+          <label class="q-label" id="campingTitle">Camping</label>
+          <div class="q-note" id="campingNote"></div>
+          <div class="choice-row"><input type="radio" name="camping" value="yes" id="cp_yes"><label for="cp_yes" id="cp_yes_label"></label></div>
+          <div class="choice-row"><input type="radio" name="camping" value="no" id="cp_no" checked><label for="cp_no" id="cp_no_label"></label></div>
+        </div>
+      </div>
+
+      <!-- ===== Special request ===== -->
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" for="f_special" id="specialLabel"></label>
+          <textarea id="f_special" name="special" rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- ===== Payment mode (choice only — details shown on next page) ===== -->
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" id="paymentModeLabel"></label>
+          <div class="choice-row"><input type="radio" name="paymentMode" value="upi" id="pm_upi"><label for="pm_upi" id="pm_upi_label"></label></div>
+          <div class="choice-row"><input type="radio" name="paymentMode" value="bank" id="pm_bank"><label for="pm_bank" id="pm_bank_label"></label></div>
+          <div class="choice-row"><input type="radio" name="paymentMode" value="qr" id="pm_qr"><label for="pm_qr" id="pm_qr_label"></label></div>
+          <div class="field-error" id="err_payment"></div>
+        </div>
+      </div>
+
+      <!-- ===== Page 1 navigation ===== -->
+      <div class="card">
+        <div class="card-body footer-bar">
+          <button type="button" class="clear-link" id="clearFormBtn"></button>
+          <button type="button" class="btn-confirm" id="nextBtn"></button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================================================================
+         PAGE 2 — branches by the payment mode chosen on page 1;
+         shows only that method's details + the live total.
+         ================================================================ -->
+    <section class="page" id="page-2" data-page="2">
+
+      <div class="card">
+        <div class="card-body">
+          <label class="q-label" id="page2Title"></label>
+
+          <!-- UPI detail -->
+          <div class="pay-detail" id="detailUpi" hidden>
+            <div class="pay-detail-head" id="payUpiHeading"></div>
+            <div class="pay-detail-body">
+              <div class="pay-row">
+                <span><span id="upiIdRowLabel"></span> <span class="val" id="upiIdText"></span></span>
+                <button type="button" class="copy-btn" data-copy-target="upiIdText" id="copyBtnUpi"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bank detail -->
+          <div class="pay-detail" id="detailBank" hidden>
+            <div class="pay-detail-head" id="payBankHeading"></div>
+            <div class="pay-detail-body">
+              <div class="pay-row">
+                <span><span id="accountRowLabel"></span> <span class="val" id="bankAccText"></span></span>
+                <button type="button" class="copy-btn" data-copy-target="bankAccText" id="copyBtnAcc"></button>
+              </div>
+              <div class="pay-row">
+                <span><span id="ifscRowLabel"></span> <span class="val" id="bankIfscText"></span></span>
+                <button type="button" class="copy-btn" data-copy-target="bankIfscText" id="copyBtnIfsc"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR detail -->
+          <div class="pay-detail" id="detailQr" hidden>
+            <div class="pay-detail-head" id="payQrHeading"></div>
+            <div class="pay-detail-body">
+              <p style="margin-top:0;" id="scanAndPayText"></p>
+              <div class="qr-box">
+                <img id="qrImage" src="" alt="Payment QR code">
+                <div style="margin-top:12px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                  <button type="button" class="dl-btn" id="qrDownloadBtn"></button>
+                  <button type="button" class="copy-btn" data-copy-target="upiIdText2" id="copyBtnUpi2"></button>
+                </div>
+                <span class="val" id="upiIdText2" style="display:none;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Live total ===== -->
+      <div class="card total-card">
+        <div class="card-body">
+          <label class="q-label" style="margin-bottom:6px;" id="estimatedTotalLabel"></label>
+          <div id="totalBreakdown" class="total-breakdown"></div>
+          <div class="total-line">
+            <span id="totalLabel"></span>
+            <span id="totalAmount">&#8377;0</span>
+          </div>
+          <div class="q-note" style="margin-top:10px;" id="totalFooterNote"></div>
+        </div>
+      </div>
+
+      <!-- ===== Page 2 navigation ===== -->
+      <div class="card">
+        <div class="card-body footer-bar">
+          <button type="button" class="btn-back" id="backBtn"></button>
+          <button type="submit" class="btn-confirm" id="submitBtn"></button>
+        </div>
+      </div>
+
+    </section>
+
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Invisible corner tap-zone: tap it 5 times to open the admin dashboard -->
+<div class="admin-trigger" id="adminTrigger" title=""></div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
