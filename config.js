@@ -182,7 +182,7 @@ const DEFAULT_CONFIG = {
   labels: {
 
     // ----- Top of page 1 -----
-    topNote: "This form collects your name, WhatsApp number and booking details so we can confirm your adventure.",
+    topNote: "START YOUR ADVENTURE JOURNEY.",
     requiredNote: "* Indicates required question",
     page1Indicator: "Page 1 of 2",
     page2Indicator: "Page 2 of 2",
@@ -272,7 +272,7 @@ const DEFAULT_CONFIG = {
     // ----- Live total box -----
     estimatedTotalLabel: "Estimated total",
     totalLabel: "Total",
-    totalFooterNote: "Final amount will be confirmed with you on WhatsApp.",
+    totalFooterNote: "Final booking will be confirmed with you on WhatsApp.",
     emptyBreakdownNote: "Select a package to see pricing",
 
     // ----- Page 2 buttons -----
